@@ -1,337 +1,876 @@
-body {
-    background: #f5f7fb;
-    font-family: Arial, Helvetica, sans-serif;
+/* =========================================
+   IT HELPDESK TICKET TRACKER
+   ========================================= */
+
+
+/* =========================================
+   DATA
+   ========================================= */
+
+let tickets =
+    JSON.parse(
+        localStorage.getItem("helpdeskTickets")
+    ) || [];
+
+
+/* =========================================
+   LOGIN
+   ========================================= */
+
+document
+    .getElementById("loginForm")
+    .addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+        const username =
+            document.getElementById("username").value;
+
+        const password =
+            document.getElementById("password").value;
+
+
+        if (
+            username === "admin" &&
+            password === "admin123"
+        ) {
+
+            document
+                .getElementById("loginPage")
+                .classList.add("d-none");
+
+            document
+                .getElementById("appPage")
+                .classList.remove("d-none");
+
+            document
+                .getElementById("loggedUser")
+                .textContent = username;
+
+            updateDashboard();
+
+            displayTickets();
+
+        }
+
+        else {
+
+            document
+                .getElementById("loginError")
+                .classList.remove("d-none");
+
+        }
+
+    });
+
+
+/* =========================================
+   LOGOUT
+   ========================================= */
+
+function logout() {
+
+    document
+        .getElementById("appPage")
+        .classList.add("d-none");
+
+    document
+        .getElementById("loginPage")
+        .classList.remove("d-none");
+
 }
 
 
-/* LOGIN */
+/* =========================================
+   SECTION NAVIGATION
+   ========================================= */
 
-.login-page {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+function showSection(section) {
 
-    background: linear-gradient(
-        135deg,
-        #0d6efd,
-        #6610f2
+    const sections = [
+
+        "dashboardSection",
+        "createTicketSection",
+        "ticketsSection",
+        "knowledgeSection"
+
+    ];
+
+
+    sections.forEach(function(id) {
+
+        document
+            .getElementById(id)
+            .classList.add("d-none");
+
+    });
+
+
+    document
+        .getElementById(section + "Section")
+        .classList.remove("d-none");
+
+
+    /* Remove active buttons */
+
+    document
+        .querySelectorAll(".sidebar-btn")
+        .forEach(function(button) {
+
+            button.classList.remove("active");
+
+        });
+
+
+    /* Activate correct button */
+
+    if (section === "dashboard") {
+
+        document
+            .getElementById("dashboardBtn")
+            .classList.add("active");
+
+        updateDashboard();
+
+    }
+
+
+    if (section === "createTicket") {
+
+        document
+            .getElementById("createBtn")
+            .classList.add("active");
+
+    }
+
+
+    if (section === "tickets") {
+
+        document
+            .getElementById("ticketsBtn")
+            .classList.add("active");
+
+        displayTickets();
+
+    }
+
+
+    if (section === "knowledge") {
+
+        document
+            .getElementById("knowledgeBtn")
+            .classList.add("active");
+
+    }
+
+}
+
+
+/* =========================================
+   CREATE TICKET
+   ========================================= */
+
+document
+    .getElementById("ticketForm")
+    .addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+
+        const ticket = {
+
+            id: generateTicketID(),
+
+            title:
+                document
+                    .getElementById("issueTitle")
+                    .value,
+
+            category:
+                document
+                    .getElementById("category")
+                    .value,
+
+            priority:
+                document
+                    .getElementById("priority")
+                    .value,
+
+            date:
+                document
+                    .getElementById("ticketDate")
+                    .value,
+
+            description:
+                document
+                    .getElementById("description")
+                    .value,
+
+            status: "Open"
+
+        };
+
+
+        tickets.push(ticket);
+
+
+        localStorage.setItem(
+            "helpdeskTickets",
+            JSON.stringify(tickets)
+        );
+
+
+        alert(
+            "Ticket created successfully!\n\nTicket ID: "
+            + ticket.id
+        );
+
+
+        document
+            .getElementById("ticketForm")
+            .reset();
+
+
+        updateDashboard();
+
+        displayTickets();
+
+        showSection("tickets");
+
+    });
+
+
+/* =========================================
+   GENERATE TICKET ID
+   ========================================= */
+
+function generateTicketID() {
+
+    return "TKT-" +
+        String(
+            tickets.length + 1001
+        );
+
+}
+
+
+/* =========================================
+   DASHBOARD
+   ========================================= */
+
+function updateDashboard() {
+
+    const total =
+        tickets.length;
+
+
+    const open =
+        tickets.filter(
+            ticket =>
+                ticket.status === "Open"
+        ).length;
+
+
+    const progress =
+        tickets.filter(
+            ticket =>
+                ticket.status === "In Progress"
+        ).length;
+
+
+    const resolved =
+        tickets.filter(
+            ticket =>
+                ticket.status === "Resolved"
+        ).length;
+
+
+    document
+        .getElementById("totalTickets")
+        .textContent = total;
+
+
+    document
+        .getElementById("openTickets")
+        .textContent = open;
+
+
+    document
+        .getElementById("progressTickets")
+        .textContent = progress;
+
+
+    document
+        .getElementById("resolvedTickets")
+        .textContent = resolved;
+
+
+    displayRecentTickets();
+
+}
+
+
+/* =========================================
+   RECENT TICKETS
+   ========================================= */
+
+function displayRecentTickets() {
+
+    const table =
+        document.getElementById(
+            "recentTickets"
+        );
+
+
+    table.innerHTML = "";
+
+
+    const recentTickets =
+        tickets.slice(-5).reverse();
+
+
+    recentTickets.forEach(function(ticket) {
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                <strong>${ticket.id}</strong>
+            </td>
+
+            <td>
+                ${ticket.title}
+            </td>
+
+            <td>
+                ${ticket.category}
+            </td>
+
+            <td>
+                ${ticket.priority}
+            </td>
+
+            <td>
+
+                <span
+                    class="status-badge
+                    ${getStatusClass(ticket.status)}"
+                >
+
+                    ${ticket.status}
+
+                </span>
+
+            </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+/* =========================================
+   DISPLAY ALL TICKETS
+   ========================================= */
+
+function displayTickets() {
+
+    const table =
+        document.getElementById(
+            "ticketTable"
+        );
+
+
+    if (!table) return;
+
+
+    table.innerHTML = "";
+
+
+    const search =
+        document
+            .getElementById("searchTicket")
+            .value
+            .toLowerCase();
+
+
+    const statusFilter =
+        document
+            .getElementById("statusFilter")
+            .value;
+
+
+    const priorityFilter =
+        document
+            .getElementById("priorityFilter")
+            .value;
+
+
+    const filteredTickets =
+        tickets.filter(function(ticket) {
+
+
+            const matchesSearch =
+
+                ticket.id
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                ticket.title
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                ticket.category
+                    .toLowerCase()
+                    .includes(search);
+
+
+            const matchesStatus =
+
+                statusFilter === ""
+
+                ||
+
+                ticket.status ===
+                    statusFilter;
+
+
+            const matchesPriority =
+
+                priorityFilter === ""
+
+                ||
+
+                ticket.priority ===
+                    priorityFilter;
+
+
+            return (
+
+                matchesSearch &&
+                matchesStatus &&
+                matchesPriority
+
+            );
+
+        });
+
+
+    filteredTickets.forEach(function(ticket) {
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                <strong>${ticket.id}</strong>
+            </td>
+
+            <td>
+                ${ticket.title}
+            </td>
+
+            <td>
+                ${ticket.category}
+            </td>
+
+            <td>
+                ${ticket.priority}
+            </td>
+
+            <td>
+                ${ticket.date}
+            </td>
+
+            <td>
+
+                <select
+                    class="form-select form-select-sm"
+                    onchange="
+                        updateStatus(
+                            '${ticket.id}',
+                            this.value
+                        )
+                    "
+                >
+
+                    <option
+                        ${ticket.status === "Open"
+                            ? "selected"
+                            : ""}
+                    >
+                        Open
+                    </option>
+
+                    <option
+                        ${ticket.status === "In Progress"
+                            ? "selected"
+                            : ""}
+                    >
+                        In Progress
+                    </option>
+
+                    <option
+                        ${ticket.status === "Resolved"
+                            ? "selected"
+                            : ""}
+                    >
+                        Resolved
+                    </option>
+
+                    <option
+                        ${ticket.status === "Closed"
+                            ? "selected"
+                            : ""}
+                    >
+                        Closed
+                    </option>
+
+                </select>
+
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="
+                        viewTicket('${ticket.id}')
+                    "
+                >
+
+                    <i class="bi bi-eye"></i>
+
+                </button>
+
+
+                <button
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="
+                        deleteTicket('${ticket.id}')
+                    "
+                >
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+/* =========================================
+   UPDATE STATUS
+   ========================================= */
+
+function updateStatus(id, newStatus) {
+
+    const ticket =
+        tickets.find(
+            ticket =>
+                ticket.id === id
+        );
+
+
+    if (ticket) {
+
+        ticket.status =
+            newStatus;
+
+
+        localStorage.setItem(
+            "helpdeskTickets",
+            JSON.stringify(tickets)
+        );
+
+
+        updateDashboard();
+
+    }
+
+}
+
+
+/* =========================================
+   DELETE TICKET
+   ========================================= */
+
+function deleteTicket(id) {
+
+    const confirmDelete =
+        confirm(
+            "Are you sure you want to delete this ticket?"
+        );
+
+
+    if (!confirmDelete) return;
+
+
+    tickets =
+        tickets.filter(
+            ticket =>
+                ticket.id !== id
+        );
+
+
+    localStorage.setItem(
+        "helpdeskTickets",
+        JSON.stringify(tickets)
     );
+
+
+    displayTickets();
+
+    updateDashboard();
+
 }
 
 
-.login-card {
-    width: 400px;
-    background: white;
-    padding: 40px;
-    border-radius: 15px;
+/* =========================================
+   VIEW TICKET
+   ========================================= */
 
-    text-align: center;
+function viewTicket(id) {
 
-    box-shadow:
-        0 15px 40px rgba(0,0,0,.2);
+    const ticket =
+        tickets.find(
+            ticket =>
+                ticket.id === id
+        );
+
+
+    if (!ticket) return;
+
+
+    alert(
+
+        "TICKET DETAILS\n\n" +
+
+        "Ticket ID: " +
+        ticket.id +
+
+        "\n\nIssue: " +
+        ticket.title +
+
+        "\n\nCategory: " +
+        ticket.category +
+
+        "\n\nPriority: " +
+        ticket.priority +
+
+        "\n\nDate: " +
+        ticket.date +
+
+        "\n\nStatus: " +
+        ticket.status +
+
+        "\n\nDescription:\n" +
+        ticket.description
+
+    );
+
 }
 
 
-.logo {
-    width: 70px;
-    height: 70px;
+/* =========================================
+   STATUS COLOR
+   ========================================= */
 
-    margin: auto;
-    margin-bottom: 15px;
+function getStatusClass(status) {
 
-    border-radius: 50%;
+    if (status === "Open")
+        return "status-open";
 
-    background: #0d6efd;
-    color: white;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    if (status === "In Progress")
+        return "status-progress";
 
-    font-size: 32px;
+
+    if (status === "Resolved")
+        return "status-resolved";
+
+
+    return "status-closed";
+
 }
 
 
-.login-card h2 {
-    font-weight: 700;
-}
+/* =========================================
+   KNOWLEDGE BASE
+   ========================================= */
 
+function showGuide(type) {
 
-.demo-login {
-    margin-top: 20px;
-    padding: 10px;
+    let title = "";
 
-    background: #f1f3f5;
+    let content = "";
 
-    border-radius: 8px;
 
-    font-size: 13px;
-}
+    if (type === "network") {
 
+        title = "Network Troubleshooting";
 
-/* SIDEBAR */
+        content = `
 
-.sidebar {
-    min-height: calc(100vh - 56px);
+            <ol>
 
-    background: white;
+                <li>Check the network cable.</li>
 
-    border-right: 1px solid #ddd;
+                <li>Check Wi-Fi connection.</li>
 
-    padding: 20px 10px;
-}
+                <li>Restart the network adapter.</li>
 
+                <li>Restart the router if required.</li>
 
-.sidebar-title {
-    color: #777;
+                <li>Check IP configuration.</li>
 
-    font-size: 12px;
+            </ol>
 
-    margin-bottom: 15px;
+        `;
 
-    padding-left: 10px;
-}
-
-
-.sidebar-btn {
-    width: 100%;
-
-    border: none;
-
-    background: transparent;
-
-    padding: 12px;
-
-    text-align: left;
-
-    border-radius: 8px;
-
-    margin-bottom: 5px;
-
-    color: #555;
-}
-
-
-.sidebar-btn:hover {
-    background: #e9f2ff;
-
-    color: #0d6efd;
-}
-
-
-.sidebar-btn.active {
-    background: #0d6efd;
-
-    color: white;
-}
-
-
-.sidebar-btn i {
-    margin-right: 10px;
-}
-
-
-/* CONTENT */
-
-.content {
-    padding: 30px;
-}
-
-
-.page-header {
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 25px;
-}
-
-
-.page-header h2 {
-    font-weight: 700;
-}
-
-
-/* STAT CARDS */
-
-.stat-card {
-    padding: 20px;
-
-    border-radius: 12px;
-
-    background: white;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    box-shadow:
-        0 3px 12px rgba(0,0,0,.06);
-}
-
-
-.stat-card p {
-    margin: 0;
-
-    color: #777;
-
-    font-size: 14px;
-}
-
-
-.stat-card h2 {
-    margin: 5px 0 0;
-
-    font-weight: 700;
-}
-
-
-.stat-card i {
-    font-size: 35px;
-}
-
-
-.stat-card.blue i {
-    color: #0d6efd;
-}
-
-
-.stat-card.orange i {
-    color: #fd7e14;
-}
-
-
-.stat-card.purple i {
-    color: #6f42c1;
-}
-
-
-.stat-card.green i {
-    color: #198754;
-}
-
-
-/* TABLE */
-
-.table th {
-    font-size: 13px;
-
-    color: #555;
-}
-
-
-.table td {
-    vertical-align: middle;
-
-    font-size: 14px;
-}
-
-
-/* KNOWLEDGE BASE */
-
-.knowledge-card {
-    background: white;
-
-    padding: 25px;
-
-    border-radius: 12px;
-
-    height: 100%;
-
-    box-shadow:
-        0 3px 12px rgba(0,0,0,.06);
-}
-
-
-.knowledge-card i {
-    font-size: 35px;
-
-    color: #0d6efd;
-
-    margin-bottom: 15px;
-}
-
-
-.knowledge-card h5 {
-    font-weight: 700;
-}
-
-
-.knowledge-card p {
-    color: #777;
-
-    min-height: 45px;
-}
-
-
-/* STATUS BADGES */
-
-.status-badge {
-    padding: 6px 10px;
-
-    border-radius: 20px;
-
-    font-size: 12px;
-
-    font-weight: 600;
-}
-
-
-.status-open {
-    background: #fff3cd;
-
-    color: #856404;
-}
-
-
-.status-progress {
-    background: #e2d9f3;
-
-    color: #59359a;
-}
-
-
-.status-resolved {
-    background: #d1e7dd;
-
-    color: #0f5132;
-}
-
-
-.status-closed {
-    background: #e2e3e5;
-
-    color: #41464b;
-}
-
-
-/* MOBILE */
-
-@media(max-width:768px) {
-
-    .sidebar {
-        min-height: auto;
     }
 
-    .content {
-        padding: 15px;
+
+    if (type === "email") {
+
+        title = "Email Troubleshooting";
+
+        content = `
+
+            <ol>
+
+                <li>Check internet connection.</li>
+
+                <li>Verify username and password.</li>
+
+                <li>Restart Outlook.</li>
+
+                <li>Check mailbox storage.</li>
+
+                <li>Reconfigure the account if required.</li>
+
+            </ol>
+
+        `;
+
     }
 
-    .page-header {
-        flex-direction: column;
 
-        align-items: flex-start;
+    if (type === "printer") {
 
-        gap: 10px;
+        title = "Printer Troubleshooting";
+
+        content = `
+
+            <ol>
+
+                <li>Check printer power.</li>
+
+                <li>Check USB/network connection.</li>
+
+                <li>Check printer queue.</li>
+
+                <li>Remove paper jams.</li>
+
+                <li>Restart printer spooler.</li>
+
+            </ol>
+
+        `;
+
     }
 
-    .login-card {
-        width: 90%;
+
+    if (type === "software") {
+
+        title = "Software Troubleshooting";
+
+        content = `
+
+            <ol>
+
+                <li>Restart the application.</li>
+
+                <li>Restart the computer.</li>
+
+                <li>Check application updates.</li>
+
+                <li>Check system resources.</li>
+
+                <li>Reinstall the application if required.</li>
+
+            </ol>
+
+        `;
+
     }
+
+
+    if (type === "account") {
+
+        title = "Account Troubleshooting";
+
+        content = `
+
+            <ol>
+
+                <li>Verify username.</li>
+
+                <li>Check account status.</li>
+
+                <li>Reset password if required.</li>
+
+                <li>Check access permissions.</li>
+
+                <li>Contact the administrator.</li>
+
+            </ol>
+
+        `;
+
+    }
+
+
+    document
+        .getElementById("guideTitle")
+        .textContent = title;
+
+
+    document
+        .getElementById("guideContent")
+        .innerHTML = content;
+
+
+    const modal =
+        new bootstrap.Modal(
+            document.getElementById(
+                "guideModal"
+            )
+        );
+
+
+    modal.show();
 
 }
