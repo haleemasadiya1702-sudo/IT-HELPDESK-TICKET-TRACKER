@@ -1,3 +1,817 @@
-index.html
-style.css
-script.js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IT Helpdesk Ticket Tracker</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <!-- Our CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ================= LOGIN ================= -->
+
+<div id="loginPage" class="login-page">
+
+    <div class="login-card">
+
+        <div class="logo">
+            <i class="bi bi-headset"></i>
+        </div>
+
+        <h2>IT Helpdesk</h2>
+        <p class="text-muted">Ticket Tracker System</p>
+
+        <form id="loginForm">
+
+            <div class="mb-3 text-start">
+                <label class="form-label">Username</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    class="form-control"
+                    placeholder="Enter username"
+                    required
+                >
+            </div>
+
+            <div class="mb-3 text-start">
+                <label class="form-label">Password</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    class="form-control"
+                    placeholder="Enter password"
+                    required
+                >
+            </div>
+
+            <div id="loginError" class="alert alert-danger d-none">
+                Invalid username or password.
+            </div>
+
+            <button class="btn btn-primary w-100">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Login
+            </button>
+
+        </form>
+
+        <div class="demo-login">
+            Demo Login<br>
+            <strong>admin</strong> / <strong>admin123</strong>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= MAIN APPLICATION ================= -->
+
+<div id="appPage" class="d-none">
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar navbar-dark bg-primary px-4">
+
+        <span class="navbar-brand">
+            <i class="bi bi-headset"></i>
+            IT Helpdesk
+        </span>
+
+        <div class="text-white">
+
+            <span class="me-3">
+                <i class="bi bi-person-circle"></i>
+                <span id="loggedUser">Admin</span>
+            </span>
+
+            <button
+                onclick="logout()"
+                class="btn btn-light btn-sm"
+            >
+                Logout
+            </button>
+
+        </div>
+
+    </nav>
+
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <!-- SIDEBAR -->
+
+            <div class="col-md-2 sidebar">
+
+                <h6 class="sidebar-title">MENU</h6>
+
+                <button
+                    onclick="showSection('dashboard')"
+                    class="sidebar-btn active"
+                    id="dashboardBtn"
+                >
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </button>
+
+                <button
+                    onclick="showSection('createTicket')"
+                    class="sidebar-btn"
+                    id="createBtn"
+                >
+                    <i class="bi bi-plus-circle"></i>
+                    Create Ticket
+                </button>
+
+                <button
+                    onclick="showSection('tickets')"
+                    class="sidebar-btn"
+                    id="ticketsBtn"
+                >
+                    <i class="bi bi-ticket-detailed"></i>
+                    All Tickets
+                </button>
+
+                <button
+                    onclick="showSection('knowledge')"
+                    class="sidebar-btn"
+                    id="knowledgeBtn"
+                >
+                    <i class="bi bi-book"></i>
+                    Knowledge Base
+                </button>
+
+            </div>
+
+
+            <!-- MAIN CONTENT -->
+
+            <div class="col-md-10 content">
+
+
+                <!-- ================= DASHBOARD ================= -->
+
+                <section id="dashboardSection">
+
+                    <div class="page-header">
+
+                        <div>
+                            <h2>Dashboard</h2>
+                            <p class="text-muted">
+                                IT Support Ticket Overview
+                            </p>
+                        </div>
+
+                        <button
+                            onclick="showSection('createTicket')"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-plus-lg"></i>
+                            New Ticket
+                        </button>
+
+                    </div>
+
+
+                    <!-- STATISTICS -->
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-3">
+
+                            <div class="stat-card blue">
+
+                                <div>
+                                    <p>Total Tickets</p>
+                                    <h2 id="totalTickets">0</h2>
+                                </div>
+
+                                <i class="bi bi-ticket"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <div class="stat-card orange">
+
+                                <div>
+                                    <p>Open</p>
+                                    <h2 id="openTickets">0</h2>
+                                </div>
+
+                                <i class="bi bi-exclamation-circle"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <div class="stat-card purple">
+
+                                <div>
+                                    <p>In Progress</p>
+                                    <h2 id="progressTickets">0</h2>
+                                </div>
+
+                                <i class="bi bi-arrow-repeat"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <div class="stat-card green">
+
+                                <div>
+                                    <p>Resolved</p>
+                                    <h2 id="resolvedTickets">0</h2>
+                                </div>
+
+                                <i class="bi bi-check-circle"></i>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RECENT TICKETS -->
+
+                    <div class="card shadow-sm">
+
+                        <div class="card-header bg-white">
+
+                            <h5 class="mb-0">
+                                Recent Tickets
+                            </h5>
+
+                        </div>
+
+                        <div class="table-responsive">
+
+                            <table class="table table-hover mb-0">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Ticket ID</th>
+                                        <th>Issue</th>
+                                        <th>Category</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="recentTickets">
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ================= CREATE TICKET ================= -->
+
+                <section
+                    id="createTicketSection"
+                    class="d-none"
+                >
+
+                    <div class="page-header">
+
+                        <div>
+                            <h2>Create Support Ticket</h2>
+
+                            <p class="text-muted">
+                                Report a new IT issue
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="card shadow-sm">
+
+                        <div class="card-body">
+
+                            <form id="ticketForm">
+
+                                <div class="row g-3">
+
+
+                                    <div class="col-md-8">
+
+                                        <label class="form-label">
+                                            Issue Title
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            id="issueTitle"
+                                            class="form-control"
+                                            placeholder="Enter issue title"
+                                            required
+                                        >
+
+                                    </div>
+
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Date
+                                        </label>
+
+                                        <input
+                                            type="date"
+                                            id="ticketDate"
+                                            class="form-control"
+                                            required
+                                        >
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Category
+                                        </label>
+
+                                        <select
+                                            id="category"
+                                            class="form-select"
+                                            required
+                                        >
+
+                                            <option value="">
+                                                Select Category
+                                            </option>
+
+                                            <option>Hardware</option>
+                                            <option>Software</option>
+                                            <option>Network</option>
+                                            <option>Email</option>
+                                            <option>Printer</option>
+                                            <option>Account / Access</option>
+                                            <option>Other</option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Priority
+                                        </label>
+
+                                        <select
+                                            id="priority"
+                                            class="form-select"
+                                            required
+                                        >
+
+                                            <option value="">
+                                                Select Priority
+                                            </option>
+
+                                            <option>Low</option>
+                                            <option>Medium</option>
+                                            <option>High</option>
+                                            <option>Critical</option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <div class="col-12">
+
+                                        <label class="form-label">
+                                            Description
+                                        </label>
+
+                                        <textarea
+                                            id="description"
+                                            class="form-control"
+                                            rows="6"
+                                            placeholder="Describe the issue..."
+                                            required
+                                        ></textarea>
+
+                                    </div>
+
+
+                                    <div class="col-12">
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary"
+                                        >
+                                            <i class="bi bi-send"></i>
+                                            Raise Ticket
+                                        </button>
+
+                                        <button
+                                            type="reset"
+                                            class="btn btn-secondary"
+                                        >
+                                            Clear
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ================= ALL TICKETS ================= -->
+
+                <section
+                    id="ticketsSection"
+                    class="d-none"
+                >
+
+                    <div class="page-header">
+
+                        <div>
+                            <h2>Ticket Dashboard</h2>
+
+                            <p class="text-muted">
+                                Manage support tickets
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <!-- SEARCH -->
+
+                    <div class="card shadow-sm mb-3">
+
+                        <div class="card-body">
+
+                            <div class="row g-2">
+
+                                <div class="col-md-6">
+
+                                    <input
+                                        type="text"
+                                        id="searchTicket"
+                                        class="form-control"
+                                        placeholder="Search tickets..."
+                                        onkeyup="displayTickets()"
+                                    >
+
+                                </div>
+
+
+                                <div class="col-md-3">
+
+                                    <select
+                                        id="statusFilter"
+                                        class="form-select"
+                                        onchange="displayTickets()"
+                                    >
+
+                                        <option value="">
+                                            All Status
+                                        </option>
+
+                                        <option>Open</option>
+                                        <option>In Progress</option>
+                                        <option>Resolved</option>
+                                        <option>Closed</option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="col-md-3">
+
+                                    <select
+                                        id="priorityFilter"
+                                        class="form-select"
+                                        onchange="displayTickets()"
+                                    >
+
+                                        <option value="">
+                                            All Priority
+                                        </option>
+
+                                        <option>Low</option>
+                                        <option>Medium</option>
+                                        <option>High</option>
+                                        <option>Critical</option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TICKET TABLE -->
+
+                    <div class="card shadow-sm">
+
+                        <div class="table-responsive">
+
+                            <table class="table table-hover mb-0">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>ID</th>
+                                        <th>Issue</th>
+                                        <th>Category</th>
+                                        <th>Priority</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="ticketTable">
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ================= KNOWLEDGE BASE ================= -->
+
+                <section
+                    id="knowledgeSection"
+                    class="d-none"
+                >
+
+                    <div class="page-header">
+
+                        <div>
+
+                            <h2>Knowledge Base</h2>
+
+                            <p class="text-muted">
+                                Common IT troubleshooting guides
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+
+                        <div class="col-md-4">
+
+                            <div class="knowledge-card">
+
+                                <i class="bi bi-wifi"></i>
+
+                                <h5>Network Issues</h5>
+
+                                <p>
+                                    Troubleshooting Wi-Fi,
+                                    LAN and connectivity issues.
+                                </p>
+
+                                <button
+                                    onclick="showGuide('network')"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View Guide
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="knowledge-card">
+
+                                <i class="bi bi-envelope"></i>
+
+                                <h5>Email Issues</h5>
+
+                                <p>
+                                    Common Outlook and email
+                                    troubleshooting steps.
+                                </p>
+
+                                <button
+                                    onclick="showGuide('email')"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View Guide
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="knowledge-card">
+
+                                <i class="bi bi-printer"></i>
+
+                                <h5>Printer Issues</h5>
+
+                                <p>
+                                    Printer connection,
+                                    queue and paper-jam fixes.
+                                </p>
+
+                                <button
+                                    onclick="showGuide('printer')"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View Guide
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="knowledge-card">
+
+                                <i class="bi bi-windows"></i>
+
+                                <h5>Software Issues</h5>
+
+                                <p>
+                                    Basic troubleshooting for
+                                    Windows and applications.
+                                </p>
+
+                                <button
+                                    onclick="showGuide('software')"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View Guide
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="knowledge-card">
+
+                                <i class="bi bi-person-lock"></i>
+
+                                <h5>Account / Access</h5>
+
+                                <p>
+                                    Password, account and access
+                                    troubleshooting.
+                                </p>
+
+                                <button
+                                    onclick="showGuide('account')"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View Guide
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- GUIDE MODAL -->
+
+<div
+    class="modal fade"
+    id="guideModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title"
+                    id="guideTitle"
+                >
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+            <div
+                class="modal-body"
+                id="guideContent"
+            >
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<!-- Our JavaScript -->
+
+<script src="script.js"></script>
+
+</body>
+</html>
